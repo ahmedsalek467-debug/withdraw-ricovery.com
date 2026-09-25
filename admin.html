@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অ্যাডমিন ড্যাশবোর্ড - উত্তোলন সমস্যা</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0f0d; --bg-card: #111a16; --fg: #e8f0ec; --fg-muted: #7a9489;
+            --accent: #00e68a; --accent-dim: #00b36b; --accent-glow: rgba(0, 230, 138, 0.15);
+            --gold: #f0c040; --gold-dim: #c9a030; --border: #1e3329;
+            --danger: #ff4757; --danger-glow: rgba(255, 71, 87, 0.15);
+            --warning: #ffa502; --warning-glow: rgba(255, 165, 2, 0.15);
+            --input-bg: #0d1612; --radius: 14px; --radius-sm: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans Bengali', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
+        .bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .bg-layer .orb { position: absolute; border-radius: 50%; filter: blur(100px); animation: orbFloat 12s ease-in-out infinite; }
+        .bg-layer .orb:nth-child(1) { width: 400px; height: 400px; background: radial-gradient(circle, rgba(0,230,138,0.08), transparent 70%); top: -100px; left: -100px; }
+        .bg-layer .orb:nth-child(2) { width: 350px; height: 350px; background: radial-gradient(circle, rgba(240,192,64,0.06), transparent 70%); bottom: -80px; right: -80px; animation-delay: -4s; animation-duration: 15s; }
+        @keyframes orbFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-20px, 20px) scale(0.95); } }
+        .grid-pattern { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(0,230,138,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,230,138,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+        
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 30px 18px 60px; min-height: 100vh; }
+        .header { text-align: center; padding: 30px 0 10px; margin-bottom: 30px; }
+        .header-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-dim)); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 30px; color: var(--bg); box-shadow: 0 0 40px rgba(0,230,138,0.25); }
+        .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .admin-logout-btn { background: var(--danger-glow); color: var(--danger); border: 1px solid var(--danger); padding: 10px 18px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans Bengali'; font-weight: 600; transition: 0.3s; font-size: 14px; }
+        .admin-logout-btn:hover { background: var(--danger); color: #fff; }
+        
+        .issue-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 15px; transition: 0.3s; }
+        .issue-card:hover { border-color: var(--accent-dim); }
+        .issue-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .issue-user { font-size: 18px; font-weight: 700; }
+        .issue-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-pending { background: var(--warning-glow); color: var(--warning); border: 1px solid var(--warning); }
+        .badge-resolved { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent); }
+        .issue-info { font-size: 14px; color: var(--fg-muted); margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; }
+        .issue-screenshot { width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 15px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
+        .issue-screenshot:hover { transform: scale(1.02); }
+        .resolve-btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--accent), var(--accent-dim)); color: var(--bg); font-family: 'Noto Sans Bengali'; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .resolve-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,230,138,0.3); }
+        
+        .login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; width: 90%; max-width: 350px; text-align: center; }
+        .login-box h3 { margin-bottom: 20px; font-size: 20px; }
+        .login-input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--input-bg); color: var(--fg); font-family: 'Noto Sans Bengali'; margin-bottom: 15px; text-align: center; font-size: 16px; }
+        .login-input:focus { outline: none; border-color: var(--accent); }
+        .login-submit { width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--gold), var(--gold-dim)); color: var(--bg); font-weight: 700; font-family: 'Noto Sans Bengali'; cursor: pointer; font-size: 16px; }
+        .login-error { color: var(--danger); font-size: 13px; margin-top: 10px; display: none; }
+        
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; }
+        .toast { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--fg); box-shadow: 0 10px 40px rgba(0,0,0,0.5); animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: auto; }
+        .toast.success { border-color: var(--accent-dim); }
+        .toast.success i { color: var(--accent); }
+        .toast.error { border-color: var(--danger); }
+        .toast.error i { color: var(--danger); }
+        .toast.out { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+    </style>
+</head>
+<body>
+    <div class="bg-layer"><div class="orb"></div><div class="orb"></div></div>
+    <div class="grid-pattern"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h3><i class="fas fa-user-shield" style="color:var(--accent); margin-right:8px"></i> অ্যাডমিন লগইন</h3>
+            <input type="password" class="login-input" id="passInput" placeholder="অ্যাডমিন পাসওয়ার্ড দিন">
+            <button class="login-submit" id="loginBtn">লগইন করুন</button>
+            <div class="login-error" id="loginError">পাসওয়ার্ড ভুল হয়েছে!</div>
+        </div>
+    </div>
+
+    <main class="container" id="adminContainer" style="display: none;">
+        <header class="header">
+            <div class="header-icon" aria-hidden="true"><i class="fas fa-headset"></i></div>
+            <h1>অ্যাডমিন ড্যাশবোর্ড</h1>
+        </header>
+
+        <div class="admin-header">
+            <h3><i class="fas fa-list-alt" style="color:var(--accent)"></i> সমস্যাগুলোর তালিকা</h3>
+            <button class="admin-logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
+        </div>
+
+        <div id="issuesList">
+            <!-- Issues will be injected here -->
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBExZ13aActknQfxRPGj3VM8co95dsJYGs",
+            authDomain: "bk666-238f4.firebaseapp.com",
+            projectId: "bk666-238f4",
+            storageBucket: "bk666-238f4.firebasestorage.app",
+            messagingSenderId: "834803945334",
+            appId: "1:834803945334:web:7060a8c9c5cb6ac214b457",
+            measurementId: "G-LKZXV1MMH4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const loginOverlay = document.getElementById('loginOverlay');
+        const passInput = document.getElementById('passInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const adminContainer = document.getElementById('adminContainer');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const issuesList = document.getElementById('issuesList');
+        const toastContainer = document.getElementById('toastContainer');
+
+        loginBtn.addEventListener('click', () => {
+            if (passInput.value === 'Admin@123') {
+                loginOverlay.style.display = 'none';
+                adminContainer.style.display = 'block';
+                loadAdminData();
+            } else {
+                loginError.style.display = 'block';
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            adminContainer.style.display = 'none';
+            loginOverlay.style.display = 'flex';
+            passInput.value = '';
+            loginError.style.display = 'none';
+        });
+
+        function loadAdminData() {
+            const q = query(collection(db, "withdrawal_issues"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                issuesList.innerHTML = '';
+                if (snapshot.empty) {
+                    issuesList.innerHTML = '<p style="text-align:center; color:var(--fg-muted); padding:30px 0">কোনো সমস্যা পাওয়া যায়নি।</p>';
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    const time = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('bn-BD') : 'সময় অজানা';
+
+                    const card = document.createElement('div');
+                    card.className = 'issue-card';
+                    card.innerHTML = `
+                        <div class="issue-top">
+                            <div class="issue-user"><i class="fas fa-user" style="color:var(--accent); margin-right:8px"></i>${data.username}</div>
+                            <div class="issue-badge ${data.status === 'resolved' ? 'badge-resolved' : 'badge-pending'}">${data.status === 'resolved' ? 'সমাধান হয়েছে' : 'অপেক্ষমাণ'}</div>
+                        </div>
+                        <div class="issue-info">
+                            <span><i class="fas fa-tag"></i> ${data.problemType}</span>
+                            <span><i class="fas fa-receipt"></i> রেফারেন্স: ${data.reference}</span>
+                            <span><i class="fas fa-clock"></i> ${time}</span>
+                        </div>
+                        <a href="${data.screenshotUrl}" target="_blank"><img src="${data.screenshotUrl}" class="issue-screenshot" alt="Screenshot"></a>
+                        ${data.status !== 'resolved' ? `<button class="resolve-btn" data-id="${id}"><i class="fas fa-check-circle"></i> সমাধান করুন</button>` : ''}
+                    `;
+                    issuesList.appendChild(card);
+                });
+
+                document.querySelectorAll('.resolve-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        try {
+                            await updateDoc(doc(db, "withdrawal_issues", id), { status: "resolved" });
+                            showToast('সমস্যাটি সফলভাবে সমাধান করা হয়েছে!', 'success');
+                        } catch (err) {
+                            showToast('আপডেট করতে সমস্যা হয়েছে!', 'error');
+                        }
+                    });
+                });
+            });
+        }
+
+        function showToast(message, type = 'success') { const toast = document.createElement('div'); toast.className = `toast ${type}`; const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle' }; toast.innerHTML = `<i class="fas ${icons[type]}"></i><span>${message}</span>`; toastContainer.appendChild(toast); setTimeout(() => { toast.classList.add('out'); toast.addEventListener('animationend', () => toast.remove()); }, 3500); }
+    </script>
+</body>
+</html>
